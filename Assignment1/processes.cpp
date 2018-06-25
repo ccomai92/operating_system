@@ -41,13 +41,13 @@ int main(int argc, char *argv[]) {
         }
 
         if (childPid == 0) { // child process
-            cerr << "cccccchild" << endl; 
+            cerr << "child" << endl; 
             close(pipeFD1[READ]); 
             dup2(pipeFD1[WRITE], 1); // std::cout is now child write
             execl("/bin/ps", "ps", "-A", (char*)0);  
             perror("child failed");  
         } else { // parent process
-            cerr << "parentttttt" << endl; 
+            cerr << "parent" << endl; 
             wait(NULL); 
             cerr << "child done" << endl; 
             close(pipeFD1[WRITE]); 

@@ -42,6 +42,7 @@ public class Shell extends Thread {
                 }
             }
 
+            // wait for children to join 
             for (int i = 0; i < countAmpersand; i++) {
                 SysLib.join(); 
             }

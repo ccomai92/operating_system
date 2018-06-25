@@ -1,0 +1,31 @@
+./processes tty
+ps -A | grep tty | wc -l
+cerr: 
+    grand parent
+    parent
+    child
+    child done
+    parent done
+output: 76
+
+
+./processes Sys
+ps -A | grep Sys | wc -l
+cerr: 
+    grand parent
+    parent
+    child
+    child done
+    parent done
+output: 0
+
+
+./processes user
+ps -A | grep user | wc -l
+cerr: 
+    grand parent
+    parent
+    child
+    child done
+    parent done
+output: 0

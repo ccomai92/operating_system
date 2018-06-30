@@ -16,6 +16,7 @@ public class DateClient {
                 System.out.println(line); 
                 sock.close(); 
             }
+            sock.close(); 
         } catch (IOException ioe) {
             System.err.println(ioe); 
         }

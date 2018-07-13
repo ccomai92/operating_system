@@ -171,7 +171,7 @@ public class Scheduler extends Thread {
 				}
 
 				this.schedulerSleep();
-				System.out.println("* * * Context Switch * * * ");
+				// System.out.println("* * * Context Switch * * * ");
 
 				synchronized (queue) {
 					if (current != null && current.isAlive())

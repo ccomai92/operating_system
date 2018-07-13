@@ -1,7 +1,7 @@
 import java.util.*;
 
 public class Scheduler extends Thread {
-	private Vector queue;	// a list of all active threads (TCBs)
+	private Vector[] queues;	// a list of all active threads (TCBs)
 	private int timeSlice;	// a time slice allocated to each user thread execution 
 	private static final int DEFAULT_TIME_SLICE = 1000; // 1000ms == 1 sec
 
@@ -51,13 +51,17 @@ public class Scheduler extends Thread {
 	// Retrieve the current thread's TCB from the queue
 	public TCB getMyTcb() {
 		Thread myThread = Thread.currentThread(); // Get my thread object
-		synchronized (queue) {
-			for (int i = 0; i < queue.size(); i++) {
-				TCB tcb = (TCB) queue.elementAt(i);
-				Thread thread = tcb.getThread();
-				if (thread == myThread) // if this is my TCB, return it
-					return tcb;
-			}
+		synchronized (this.queues) {
+            for (int i = 0; i < 3; i++) {
+                if (this.queues[i].size() != 0) {
+                    for (int j = 0; j < this.queues[i].size(); j++) {
+                        TCB tcb = (TCB) this.queues[i].elementAt(j);
+                        Thread thread = tcb.getThread();
+                        if (thread == myThread) // if this is my TCB, return it
+                            return tcb;
+                    }
+                }
+            } 
 		}
 		return null;
 	}
@@ -71,13 +75,13 @@ public class Scheduler extends Thread {
 
 	public Scheduler() {
 		this.timeSlice = DEFAULT_TIME_SLICE;
-		this.queue = new Vector();
+		this.queues = new Vector[3];
 		this.initTid(DEFAULT_MAX_THREADS);
 	}
 
 	public Scheduler(int quantum) {
 		this.timeSlice = quantum;
-		this.queue = new Vector();
+		this.queues = new Vector[3];
 		this.initTid(DEFAULT_MAX_THREADS);
 	}
 
@@ -85,7 +89,7 @@ public class Scheduler extends Thread {
 	// A constructor to receive the max number of threads to be spawned
 	public Scheduler(int quantum, int maxThreads) {
 		this.timeSlice = quantum;
-		this.queue = new Vector();
+		this.queues = new Vector[3];
 		this.initTid(maxThreads);
 	}
 
@@ -109,7 +113,7 @@ public class Scheduler extends Thread {
 		if (tid == -1)
 			return null;
 		TCB tcb = new TCB(t, tid, pid); // create a new TCB
-		this.queue.add(tcb);
+		this.queues[0].add(tcb); // add new thread (TCB) to queue[0] always
 		return tcb;
 	}
 
@@ -133,30 +137,46 @@ public class Scheduler extends Thread {
 	}
 
 	// A modified run of p161
-	// this is heart of Scheduler. 
-	// difference from the lecture slide 
-	// 	1. retrieving a next available TCB rather than a thread from the active thread list
-	// 	2. deleting it if it has been marked as terminated 
-	// 	3. starting the thread if it has not yet been started. 
-	// Other than these difference, the Scheduler repeats retrieving a next available TCB 
-	// from the list, raising up the corresponding thread's priority, yielding CPU
-	// to this thread with sleep(), and lowering the thread's priority  
-	public void run() {
+	// 1. Scheduler first executes all threads in queue 0. time quantum (timeSlice / 2) 
+    // 2. If a thread in the queue 0 does not complete its execution in time slice, 
+    //    move to queue 1 
+    // 3. if queue 0 is empty, execute threads in queue 1. time quantum (timeSlice)
+    //    in order to react to new threads in queue 0, scheduler check if queue 0 has 
+    //    new TCB after timeSlice / 2 
+    // 4. Same for queue 2 
+    // 5. if a thread in queue 2 does not complete its execution in its time quantum, 
+    //    back to tail of queue 2 (different than text book). 
+    public void run() {
 		Thread current = null;
 
 		//this.setPriority(6); // *****************************************neeeds to be removed 
 
 		while (true) {
 			try {
-				// get the next TCB and its thrad
-				if (this.queue.size() == 0)
-					continue;
-				TCB currentTCB = (TCB) this.queue.firstElement();
+                
+				// get the next TCB and its thread
+				TCB currentTCB;
+				int currentQ = -1;  
+                if (this.queues[0].size() != 0) {
+					currentTCB = (TCB) this.queues[0].firstElement();
+					currentQ = 0; 
+                } else if (this.queues[1].size() != 0) {
+					currentTCB = (TCB) this.queues[1].firstElement();
+					currentQ = 1;  
+				} else if (this.queues[2].size() != 0) {
+					currentTCB = (TCB) this.queues[2].firstElement();
+					currentQ = 2;  
+				} else {
+					continue; 
+				}
+				
 				if (currentTCB.getTerminated() == true) {
-					this.queue.remove(currentTCB);
+					this.queues[currentQ].remove(currentTCB);
 					this.returnTid(currentTCB.getTid());
 					continue;
 				}
+
+				
 				current = currentTCB.getThread();
 				if (current != null) {
 					if (current.isAlive())
@@ -171,7 +191,7 @@ public class Scheduler extends Thread {
 				}
 
 				this.schedulerSleep();
-				System.out.println("* * * Context Switch * * * ");
+				//System.out.println("* * * Context Switch * * * ");
 
 				synchronized (queue) {
 					if (current != null && current.isAlive())

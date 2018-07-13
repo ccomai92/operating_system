@@ -1,0 +1,59 @@
+Round-Robin Scheduling Algorithm 
+    - similar to FCFS (first come first serve)
+    - preemption is added to enable the system to switch 
+      between processes. 
+    - time quantum is defined (10 - 100 milliseconds)
+    - ready queue is treated as a circular queue 
+    - The CPU scheduler goes around the ready queue, allocating 
+      the CPU to each process for a time interval of up to 1 time quantum 
+
+Implementing Round-Robin Scheduling Algorithm (RR)
+    - keep ready queue as a FIFO 
+    - new processes are added to the tail of the ready queue 
+    - CPU scheduler picks the first process from the ready queue 
+      set a timer to interrupt after 1 time quantum
+    - dispatch the process  
+
+* Typically, higher average turnaround than SJF, but better response. 
+* performacne (q = quantum)
+    if q is large, it is same as FCFS 
+    if q is small, q must be large with respect to context switch, otherwise
+       over head is too high. 
+    Trade-off: Throughpu (large q) v. response Time 
+
+Multilevel Feedback Queue Scheduling 
+- Multilevel queue scheduling algorithm is inflexible 
+- However, Multilevel feedback queue scheduling algorithm allows a process to move
+  between queues. (separate processes according to the characteristics of their CPU 
+  burst). 
+- leaves I/O-bound and interactive processes in the higher-priority queues. 
+- process that waits too long in a lower priority queue may be moved to a
+  higher-priority queue (aging)
+- 
+
+Process Control Blocks (PCB)
+Foreground - interactive processes 
+Background - batch (or system) processes 
+TAT - Turnaround Time
+
+Type: 
+- FCFS
+- SJF
+- RR 
+
+
+preemptive - OS interrupt running thread to schedule new thread 
+           - can't just interrupt but waits till get to some place
+             to stop 
+non-preemptive - OS waits until the running thread blocks or
+                  unilaterally surrenders CPU 
+
+Scheduling Criteria 
+- CPU utilization: 40-90%, keep the CPU as busy as possible  
+- Throughput: Number of processes completed per unit of time 
+- Turnaround Time (TAT): Time of process submission to time 
+                         of completion
+- Waiting Time: Total amount of time wating in ready queue   
+- Response Time: Time a process takes from submission to 
+                  start of response
+
